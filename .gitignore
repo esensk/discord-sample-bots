@@ -1,3 +1,5 @@
+pin_allow.json
+
 *.gem
 *.rbc
 /.config
