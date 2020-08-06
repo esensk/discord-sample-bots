@@ -34,12 +34,17 @@ bot.reaction_add do |event|
   end
 end
 
-bot.command :delete do |event|
+bot.command :delete_all do |event|
   next unless event.channel.type == 1
 
-  messages = Discordrb::API::Channel.messages("Bot #{ENV["DISCORD_BOT_DISPATCH_TOKEN"]}", event.channel.id, 30)
-  puts event.channel.message
-  event.channel.delete_messages(messages)
+  token = "Bot #{ENV["DISCORD_BOT_DISPATCH_TOKEN"]}"
+  result = Discordrb::API::Channel.messages(token, event.channel.id, 30)
+  messages = JSON.load(result)
+  messages.each do |message|
+    if message["author"]["username"] == "greeting"
+        Discordrb::API::Channel.delete_message(token, event.channel.id, message["id"])
+    end
+  end
 end
 
 bot.run
