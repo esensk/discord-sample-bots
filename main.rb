@@ -10,6 +10,7 @@ rescue StandardError => e
 end
 
 bot = Discordrb::Commands::CommandBot.new token: ENV["DISCORD_BOT_DISPATCH_TOKEN"], prefix: "-"
+token = "Bot #{ENV["DISCORD_BOT_DISPATCH_TOKEN"]}"
 
 bot.reaction_add do |event|
   # DM channel type
@@ -29,15 +30,19 @@ bot.reaction_add do |event|
   allows.each do |allow|
     next unless (allow["channel"] == "all" || event.channel.id == allow["channel"].to_i) && (event.emoji.name == allow["emoji"])
 
-    content = event.message.content
-    event.user.pm(">>> #{content}")
+    result = Discordrb::API::User.create_pm(token, event.user.id)
+    channel_id = JSON.load(result)["id"]
+
+    embed = JSON.load(File.open("./embed.json"))["embed"]
+    embed["description"] = event.message.content
+
+    Discordrb::API::Channel.create_message(token, channel_id, "", false, embed)
   end
 end
 
 bot.command :delete_all do |event|
   next unless event.channel.type == 1
 
-  token = "Bot #{ENV["DISCORD_BOT_DISPATCH_TOKEN"]}"
   result = Discordrb::API::Channel.messages(token, event.channel.id, 30)
   messages = JSON.load(result)
   messages.each do |message|
