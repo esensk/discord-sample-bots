@@ -27,7 +27,7 @@ bot.reaction_add do |event|
   end
 
   allows.each do |allow|
-    next unless (event.channel.id == allow["channel_id"]) && (event.emoji.name == allow["emoji"])
+    next unless (allow["channel"] == "all" || event.channel.id == allow["channel"].to_i) && (event.emoji.name == allow["emoji"])
 
     content = event.message.content
     event.user.pm(">>> #{content}")
