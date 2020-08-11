@@ -33,10 +33,23 @@ bot.reaction_add do |event|
     result = Discordrb::API::User.create_pm(token, event.user.id)
     channel_id = JSON.load(result)["id"]
 
-    embed = JSON.load(File.open("./embed.json"))["embed"]
-    embed["description"] = event.message.content
+    embeds = event.message.embeds
+    if embeds.length < 1
+      Discordrb::API::Channel.create_message(token, channel_id,">>> #{event.message.content}")
+      break
+    end
 
-    Discordrb::API::Channel.create_message(token, channel_id, "", false, embed)
+    embedObj = embeds[0]
+    embedJson = JSON.load(File.open("./embed.json"))["embed"]
+    embedJson["title"] = embedObj.title
+    embedJson["color"] = embedObj.color
+    embedJson["description"] = embedObj.description
+    embedJson["author"]["name"] = embedObj.author.name
+    embedJson["author"]["url"] = embedObj.author.url
+    embedJson["author"]["icon_url"] = embedObj.author.icon_url
+    embedJson["footer"]["text"] = embedObj.footer.text
+    embedJson["footer"]["icon_url"] = embedObj.footer.icon_url
+    Discordrb::API::Channel.create_message(token, channel_id, embedObj.message, false, embedJson)
   end
 end
 
